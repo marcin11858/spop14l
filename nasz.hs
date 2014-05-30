@@ -21,39 +21,76 @@ main =  do
 		let state = getNewState
 		play state
 
-		
+
 play :: State -> IO ()  
 play state = do		
 			printActualBoard state
-
+--			input <- getLine
+	--		putStrLn ( "INPUT " ++ input)
+			if isFieldFreeWrapper state (Pos 8 1) then  putStrLn "Pole wolne"
+											else  putStrLn "Pole zajęte"
 
 			--let wMoves = getPossibleWolfMoves state
 			--let sMoves = getPossibleSheepMoves state
-	
+		--	case lookup input chooseOption of 
+          --          Just action -> action state -- If it is we apply this action
+            --        Nothing     -> putStrLn ( "INPUT " ++ input)
 	
 	
 
 --getPossibleWolfMoves :: State -> [Position]
 --getPossibleWolfMoves state = getWolfMoves board (getWolf board) 0
 
+{-
+getWolfMoves :: [[String]] -> (Int, Int) -> Int -> [(Int, Int)]
+getWolfMoves board wolfPos row = filter (isFieldOccupied board) [(a,b) | a <- possibleY, b <- possibleX]
+                                    where possibleY = [(fst wolfPos) + 1, (fst wolfPos) -1] -- Wolf can go backwards
+                                          possibleX = [(snd wolfPos) + 1, (snd wolfPos) -1]
+-}
+--Returns all available moves for wolf 
+getAvailableWolfMoves :: State -> [Position]
+getAvailableWolfMoves state = filter (isFieldFreeWrapper state) [(Pos x y) | x <- possibleX, y <- possibleY]
+                          where possibleX = [(x (wPosition state)) + 1, (x (wPosition state)) -1]
+								possibleY = [(y (wPosition state)) + 1, (y (wPosition state)) +1] -- Wolf can go backwards
+                                          
 
 
-isFieldFree :: State -> Position -> Bool								  
-isFieldFree	state pos = if (x pos)>0 && (x pos)<9 && (y pos)>0 && (y pos)<9 && pos==(Pos 1 3)	 
-                                then True
-                                else False		
--- Trzeba sprawdzić czy lecą po stanach nie ma takiego position
-
+-- Checks is position free 										  
+isFieldFreeWrapper:: State->Position->Bool
+isFieldFreeWrapper state pos = isFieldFree (wPosition state) (sPosition state) pos True
+-- Checks is position free 
+--Args: WolfPosition, [SheepPositions], position, True
+isFieldFree :: Position->[Position]-> Position -> Bool -> Bool									  
+isFieldFree wPos [] pos answer = if (x pos)>0 && (x pos)<9 && (y pos)>0 && (y pos)<9 
+									&& pos/=wPos && answer
+									then True
+									else False	
+isFieldFree wPos (s:sheeps) pos answer = isFieldFree wPos sheeps pos (s/=pos && answer)									
 								
---Function checks if passed field is occupied or free                                          
-{-isFieldOccupied :: [[String]] -> (Int, Int) -> Bool
-isFieldOccupied board pos = if (fst pos >= 1 && fst pos <= 8) && (snd pos >=1 && snd pos <= 8) && (board!!row)!!col == free 
-                                then True
-                                else False
-                            where row = 2*(fst pos)
-                                  col = 2*(snd pos)
-	
--}	
+
+
+
+chooseOption :: [(String, State -> IO ())]  
+chooseOption =  [("n", newGame),
+				 ("s", saveGame),
+				 ("l", loadGame),
+				 ("q", exitGame)]	
+
+--Starts new Game 
+newGame :: State -> IO() 
+newGame state = main
+
+--Starts new Game 
+saveGame :: State -> IO() 
+saveGame state = main
+
+--Starts new Game 
+loadGame :: State -> IO() 
+loadGame state = main
+--Ends a game
+exitGame :: State -> IO() 
+exitGame state = return ()
+
 
 -- Function	returns initial state of game				 
 getNewState :: State
