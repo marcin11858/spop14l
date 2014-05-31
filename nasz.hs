@@ -42,6 +42,8 @@ createTreeLevel 0 _ state = Tree (evaluateState state) state []
 createTreeLevel depth position state = if mod position 2 == 0 then Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeSheepsStates state))
                                                               else Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeWolfStates state))
 
+
+                                                              
 -- Funkcja celu dla drzewa
 evaluateState::State->Int
 evaluateState state = alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
