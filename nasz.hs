@@ -23,6 +23,7 @@ main =  do
         let state = getNewState
         let tree1 = createTree state 1
         putStrLn (show tree1)
+        play state
 
 createTree::State->Int->Tree
 createTree state depth = createTreeLevel depth 0 state 
