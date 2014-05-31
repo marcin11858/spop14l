@@ -30,7 +30,7 @@ createTree::State->Int->Tree
 createTree state depth = createTreeLevel depth 0 state 
 
 createTreeLevel::Int->Int->State->Tree -- drzewo rodzic, glebokosc drzewa, 
-createTreeLevel 0 _ state = Tree 0 state []
+createTreeLevel 0 _ state = Tree (evaluateState state) state []
 createTreeLevel depth position state = if mod position 2 == 0 then Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeSheepsStates state))
                                                               else Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeWolfStates state))
 
