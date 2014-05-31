@@ -4,3 +4,4 @@ import View
 
 main = do 
 	putStrLn "Wilk i owce"
+	mainMenu
