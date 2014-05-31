@@ -25,12 +25,19 @@ main =  do
 play :: State -> IO ()  
 play state = do        
             printActualBoard state
+            
 --            input <- getLine
     --        putStrLn ( "INPUT " ++ input)
             if isFieldFreeWrapper state (Pos 8 1) then  putStrLn "Pole wolne"
                                             else  putStrLn "Pole zajęte"
 
-            let wMoves = getPossibleWolfMoves state
+
+            
+            
+            --let state2=moveWolf state (Pos 2 7)
+            let state2=moveSheep state (Pos 4 1) (Pos 4 3)
+            let wMoves = getPossibleWolfMoves state2
+            printActualBoard state2
             do putStrLn (show wMoves)
             --let sMoves = getPossibleSheepMoves state
         --    case lookup input chooseOption of 
@@ -139,3 +146,33 @@ printBoard str = do
 -- Function prints boars with actual state         
 printActualBoard ::State -> IO ()
 printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state) getClearBoard)
+
+
+          
+-- Moves wolf to position
+moveWolf :: State -> Position -> State
+moveWolf state newWPosition = State (newWPosition) (sPosition state)
+
+-- Moves sheep from old position to new position
+moveSheep :: State -> Position -> Position -> State
+moveSheep state oldPos newPos = State (wPosition state) (sheepsPosition) 
+                                    where sheepsPosition = moveSheepFromTo (sPosition state) oldPos newPos
+ 
+moveSheepFromTo :: [Position] -> Position -> Position -> [Position]
+moveSheepFromTo (s:sheeps) oldPos newPos = if s==oldPos then newPos : sheeps
+                                                   else s : (moveSheepFromTo sheeps oldPos newPos)
+
+
+{-
+--Wrapper function for applying new positions of sheep after loading the file
+putSheep :: [[String]] -> [Int] -> [[String]]
+putSheep board newSheepPositions = applySheep board newSheepPositions currentSheepPossitions
+                                    where currentSheepPossitions = getAllSheep board -- gets current sheep positions
+
+--This function applies new sheep positions.
+--For each pair (current position and new position) it simply applies move and then the result board is returned                                    
+applySheep :: [[String]] -> [Int] -> [(Int, Int)] -> [[String]]
+applySheep board [] _ = board
+applySheep board _ [] = board
+applySheep board (y:x:xs) (n:ns) = applySheep(applyMove board n(y,x)) xs ns -- recursion to apply new position of sheep
+-}
