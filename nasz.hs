@@ -94,7 +94,7 @@ exitGame state = return ()
 
 -- Function    returns initial state of game                 
 getNewState :: State
-getNewState = State (Pos 5 4) [Pos 1 2 ,Pos 1 4, Pos 1 6, Pos 1 8]     
+getNewState = State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
 
 -- Function    returns clear board - without wilf and sheeps
 getClearBoard :: [[String]]
@@ -111,8 +111,8 @@ getClearBoard =   [[" ", "1", "2", "3", "4", "5", "6", "7", "8"],
                    
 -- Function set state on board               
 setBoard::Position->[Position]->[[String]]->[[String]]
-setBoard pos [] tab = updateMatrix tab "W" (x pos, y pos)
-setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (x z, y z))
+setBoard pos [] tab = updateMatrix tab "W" (y pos, x pos)
+setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (y z, x z))
 
 updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
 updateMatrix m x (r,c) =  take r m ++  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++ drop (r + 1) m
