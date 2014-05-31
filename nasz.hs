@@ -31,11 +31,11 @@ main =  do
  --       printTree 0 tree1 
         play state
 
-        let tree10 = createTree state 3
-        let tree2 = minmax 0 tree10
-        printTree 0 tree2
+        let tree10 = createTree state 2
+        let tuple = minmax2 0 tree10
+        printTree 0 tree10
         printActualBoard state
-        putStrLn (show (evaluateState state ))
+        putStrLn (show (tuple ))
         --play state
         putStrLn "Max ocena"
         putStrLn (show (getBest tree2))
@@ -56,15 +56,18 @@ minmax::Int->Tree->Tree
 minmax _ (Tree  state [] fValue) = Tree  state [] (evaluateState state)
 minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then Tree  state (map (minmax (depth+1)) tree) (maximum (map getValue tree) )
                                                              else Tree  state (map (minmax (depth+1)) tree) (minimum (map getValue tree) )
-{-
+
 minmax2::Int->Tree->(Int, State)
 minmax2 _ (Tree  state [] fValue) = ((evaluateState state), state)
-minmax2 depth (Tree  state tree fValue) = if mod depth 2 == 0 then findMax
-                                                              else findMin
--}
+minmax2 depth (Tree  state tree fValue) = if mod depth 2 == 0 then getMaximumTuple (map (minmax2 (depth + 1)) tree)
+                                                              else getMinimumTuple (map (minmax2 (depth + 1)) tree)
+
                                                               
 getMaximumTuple::[(Int, State)]->(Int, State)
 getMaximumTuple list = maximumBy (comparing fst) list
+
+getMinimumTuple::[(Int, State)]->(Int, State)
+getMinimumTuple list = minimumBy (comparing fst) list
 {-
 play::GameTree->Int
 play (GameTree p []) = evalState p
