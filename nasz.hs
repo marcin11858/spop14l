@@ -1,12 +1,13 @@
 import Control.Monad 
 import Data.List
+import Data.Ord
 import Text.Read
 import System.IO
 
 --Type that defines position on board
 data Position = Pos {x::Int, y::Int} deriving (Show)
 
-data Tree = Tree {funValue::Int, state::State, tree::[Tree]} deriving (Show)
+data Tree = Tree {state::State, tree::[Tree], funValue::Int} deriving (Show)
 
 instance Eq Position where
                 (Pos x1 y1) == (Pos x2 y2) = (x1 == x2) &&  (y1 == y2) 
@@ -22,31 +23,76 @@ main =  do
         printLine
         
         let state = getNewState
-        let tree1 = createTree state 3
-        putStrLn (show tree1)
+        let tree1 = createTree state 1
+        let oceny = getChildValues(tree1)
+        putStrLn (show oceny)
+        --putStrLn (show tree1)
         printLine
-        printTree 0 tree1 
+ --       printTree 0 tree1 
         play state
 
-        let tree1 = createTree state 1
+        let tree10 = createTree state 3
+        let tree2 = minmax 0 tree10
+        printTree 0 tree2
         printActualBoard state
         putStrLn (show (evaluateState state ))
         --play state
+        putStrLn "Max ocena"
+        putStrLn (show (getBest tree2))
 -- Tworzenie drzewa
 
 createTree::State->Int->Tree
 createTree state depth = createTreeLevel depth 0 state 
 
 createTreeLevel::Int->Int->State->Tree -- drzewo rodzic, glebokosc drzewa, 
-createTreeLevel 0 _ state = Tree (evaluateState state) state []
-createTreeLevel depth position state = if mod position 2 == 0 then Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeSheepsStates state))
-                                                              else Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeWolfStates state))
+createTreeLevel 0 _ state = Tree  state [] (evaluateState state)
+createTreeLevel depth position state =  Tree  state (map (createTreeLevel (depth-1) (position+1)) (getNextStates state position)) (-1)
+
+getBest:: Tree-> Int
+getBest tree=maximum(getChildValues tree)
+
+
+minmax::Int->Tree->Tree
+minmax _ (Tree  state [] fValue) = Tree  state [] (evaluateState state)
+minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then Tree  state (map (minmax (depth+1)) tree) (maximum (map getValue tree) )
+                                                             else Tree  state (map (minmax (depth+1)) tree) (minimum (map getValue tree) )
+{-
+minmax2::Int->Tree->(Int, State)
+minmax2 _ (Tree  state [] fValue) = ((evaluateState state), state)
+minmax2 depth (Tree  state tree fValue) = if mod depth 2 == 0 then findMax
+                                                              else findMin
+-}
+                                                              
+getMaximumTuple::[(Int, State)]->(Int, State)
+getMaximumTuple list = maximumBy (comparing fst) list
+{-
+play::GameTree->Int
+play (GameTree p []) = evalState p
+play (GameTree (White,_) xs) = maximum (map play xs)
+play (GameTree (Black,_) xs) = minimum (map play xs)                               
+-}
+
+
+
+getChildValues::Tree->[Int] 
+getChildValues (Tree  state [] fValue) = [fValue]
+getChildValues (Tree  state tree fValue)=  map (maximum getChildValues) tree
+
+getValue::Tree->Int
+getValue tree = (funValue tree)
+
+
 
 
                                                               
+
+getNextStates::State->Int->[State]
+getNextStates state position = if mod position 2 == 0 then getPossibleSheepsStates (sPosition state) state
+                                                      else getPossibleWolfStates state 
+
 -- Funkcja celu dla drzewa
 evaluateState::State->Int
-evaluateState state = alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
+evaluateState state = 10000 -  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
                         where alpha1 = -4
                               alpha2 = -1
                               alpha3 = 4
@@ -135,7 +181,7 @@ printSheepsPos (p:pos)  = do    putStr"("
 
        
 printTree::Int->Tree -> IO () 
-printTree depth (Tree fValue state [])  = do   
+printTree depth (Tree  state [] fValue)  = do   
                                             putStr " Poziom: "
                                             putStr (show depth)
                                             putStr " Ocena: "
@@ -143,7 +189,7 @@ printTree depth (Tree fValue state [])  = do
                                             putStr "   "
                                             printState state
                                             putStrLn ""
-printTree depth (Tree fValue state tree)  = 
+printTree depth (Tree  state tree fValue)  = 
                                          do 
                                             putStr " Poziom: "
                                             putStr (show depth)
@@ -242,7 +288,7 @@ exitGame state = return ()
 
 -- Function    returns initial state of game                 
 getNewState :: State
-getNewState = State (Pos 1 6) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
+getNewState = State (Pos 2 7) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
 
 -- Function    returns clear board - without wilf and sheeps
 getClearBoard :: [[String]]
