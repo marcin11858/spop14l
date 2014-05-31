@@ -6,7 +6,7 @@ import System.IO
 --Type that defines position on board
 data Position = Pos {x::Int, y::Int} deriving (Show)
 
-data Tree = Empty  | Node {funValue::Double, recState::State, child::[Tree]} deriving (Show)
+data Tree = Tree {funValue::Double, state::State, tree::[Tree]} deriving (Show)
 
 instance Eq Position where
                 (Pos x1 y1) == (Pos x2 y2) = (x1 == x2) &&  (y1 == y2) 
@@ -21,16 +21,22 @@ data State = State { wPosition::Position,
 main =  do 
         printLine
         let state = getNewState
-        play state
+        let tree1 = createTree state 1
+        putStrLn (show tree1)
 
 createTree::State->Int->Tree
-createTree state depth = createTreeLevel (Node 0 state []) depth 0
+createTree state depth = createTreeLevel depth 0 state 
 
-createTreeLevel::Tree->Int->Int->Tree
-createTreeLevel Empty _ _ = Empty
-createTreeLevel _ 0 _ = Empty
-createTreeLevel node depth position = Empty--if mod position 2 == 0 then
-                                       --                      else
+createTreeLevel::Int->Int->State->Tree -- drzewo rodzic, glebokosc drzewa, 
+createTreeLevel 0 _ state = Tree 0 state []
+createTreeLevel depth position state = if mod position 2 == 0 then Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeSheepsStates state))
+                                                              else Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeWolfStates state))
+                                                             
+getFakeSheepsStates::State->[State]
+getFakeSheepsStates _ = [State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1], State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 7 2]]
+
+getFakeWolfStates::State->[State] 
+getFakeWolfStates _ = [State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1], State (Pos 2 7) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]]
 
 play :: State -> IO ()  
 play state = do        
