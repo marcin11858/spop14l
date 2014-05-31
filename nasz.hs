@@ -6,13 +6,15 @@ import System.IO
 --Type that defines position on board
 data Position = Pos {x::Int, y::Int} deriving (Show)
 
+data Tree = Empty  | Node {funValue::Double, recState::State, child::[Tree]} deriving (Show)
+
 instance Eq Position where
                 (Pos x1 y1) == (Pos x2 y2) = (x1 == x2) &&  (y1 == y2) 
 
 
 --Global state - position of wolf and all sheeps
 data State = State { wPosition::Position,
-                     sPosition::[Position]}
+                     sPosition::[Position]} deriving (Show)
                      
 
 -- Main function 
@@ -21,6 +23,14 @@ main =  do
         let state = getNewState
         play state
 
+createTree::State->Int->Tree
+createTree state depth = createTreeLevel (Node 0 state []) depth 0
+
+createTreeLevel::Tree->Int->Int->Tree
+createTreeLevel Empty _ _ = Empty
+createTreeLevel _ 0 _ = Empty
+createTreeLevel node depth position = Empty--if mod position 2 == 0 then
+                                       --                      else
 
 play :: State -> IO ()  
 play state = do        
