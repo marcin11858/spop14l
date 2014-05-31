@@ -20,9 +20,12 @@ data State = State { wPosition::Position,
 -- Main function 
 main =  do 
         printLine
+        
         let state = getNewState
-        let tree1 = createTree state 1
+        let tree1 = createTree state 3
         putStrLn (show tree1)
+        printLine
+        printTree 0 tree1 
         play state
 
 createTree::State->Int->Tree
@@ -75,10 +78,56 @@ play state = do
 printStates::[State] -> IO () 
 printStates [] = putStrLn "KONIEC----------------------------------"
 printStates (s:states)= do  putStrLn "---------------------------------------"
-                            putStrLn (show s)
+                            printState s
                             putStrLn "---------------------------------------"
                             printStates states
+             
+printState::State -> IO () 
+printState state = do   putStr "W:("  
+                        putStr (show(x (wPosition state))) 
+                        putStr ","     
+                        putStr (show(y (wPosition state))) 
+                        putStr ") O:[" 
+                        printSheepsPos (sPosition state)
+                        putStr "]" 
+                        
+printSheepsPos::[Position] -> IO () 
+printSheepsPos [] = putStr ""                  
+printSheepsPos (p:pos)  = do    putStr"("
+                                putStr (show(x p)) 
+                                putStr ","     
+                                putStr (show(y p)) 
+                                putStr ")"
+                                printSheepsPos pos
 
+
+       
+printTree::Int->Tree -> IO () 
+printTree depth (Tree fValue state [])  = do   
+                                            putStr " Poziom: "
+                                            putStr (show depth)
+                                            putStr " Ocena: "
+                                            putStr (show fValue)
+                                            putStr "   "
+                                            printState state
+                                            putStrLn ""
+printTree depth (Tree fValue state tree)  = 
+                                         do 
+                                            putStr " Poziom: "
+                                            putStr (show depth)
+                                            putStr " Ocena: "
+                                            putStr (show fValue)
+                                            putStr "   "
+                                            printState state
+                                            putStrLn "" 
+                                            (mapM_ (printTree (depth+1)) tree )
+
+
+{-
+preorder :: Tree a -> [a]
+preorder Empty = []
+preorder (Node a l r) = [a] ++ preorder l ++ preorder r
+-}
 
 --Returns all available moves for wolf 
 getPossibleWolfMoves :: State -> [Position]
