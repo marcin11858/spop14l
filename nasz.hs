@@ -32,12 +32,16 @@ play state = do
                                             else  putStrLn "Pole zajęte"
 
 
+
             
             
             --let state2=moveWolf state (Pos 2 7)
             let state2=moveSheep state (Pos 4 1) (Pos 4 3)
             let wMoves = getPossibleWolfMoves state2
             printActualBoard state2
+
+            let wMoves = getPossibleSheepsMoves state
+
             do putStrLn (show wMoves)
             --let sMoves = getPossibleSheepMoves state
         --    case lookup input chooseOption of 
@@ -53,14 +57,19 @@ getPossibleWolfMoves state = filter (isFieldFreeWrapper state) [(Pos a b) | a <-
                               where possibleX = (x (wPosition state))
                                     possibleY = (y (wPosition state)) -- Wolf can go backwards
 
-{-                                    
+                                    
 getPossibleSheepsMoves :: State -> [Position]
-getPossibleSheepsMoves state = 
+getPossibleSheepsMoves state = getPossibleSheepMoves (sPosition state) state
 
-getPossibleSheepMoves :: [Possition] -> State -> [Possition]
+getPossibleSheepMoves :: [Position] -> State -> [Position]
 getPossibleSheepMoves [] _ = []
-getPossibleSheepMoves (z:zs) state = filter (isFieldFreeWrapper state                                         
--}
+getPossibleSheepMoves (z:zs) state = (filter (isFieldFreeWrapper state)[(Pos a possibleY) | a <- [possibleX-1, possibleX+1]]) ++ (getPossibleSheepMoves zs state) 
+                                     where possibleX = (x z)
+                                           possibleY = (y z) + 1
+
+--getPossibleSheepsStates::State->[State]
+--getPossibleSheepsStates state =
+                                           
 
 -- Checks is position free                                           
 isFieldFreeWrapper:: State->Position->Bool
