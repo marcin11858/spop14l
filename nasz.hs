@@ -45,20 +45,32 @@ play state = do
 
             
             
-            --let state2=moveWolf state (Pos 2 7)
+            
             let state2=moveSheep state (Pos 4 1) (Pos 4 3)
             let wMoves = getPossibleWolfMoves state2
+            
+            let state2=moveWolf state (Pos 1 2)
             printActualBoard state2
 
             let wMoves = getPossibleSheepsMoves state
+            
+            let sStates = getPossibleSheepsStates (sPosition state) state
+            let sWolfs  = getPossibleWolfStates state2
+            --printStates sStates
+            printStates sWolfs
+            
 
-            do putStrLn (show wMoves)
             --let sMoves = getPossibleSheepMoves state
         --    case lookup input chooseOption of 
           --          Just action -> action state -- If it is we apply this action
             --        Nothing     -> putStrLn ( "INPUT " ++ input)
-    
-    
+   
+printStates::[State] -> IO () 
+printStates [] = putStrLn "KONIEC----------------------------------"
+printStates (s:states)= do  putStrLn "---------------------------------------"
+                            putStrLn (show s)
+                            putStrLn "---------------------------------------"
+                            printStates states
 
 
 --Returns all available moves for wolf 
@@ -67,6 +79,15 @@ getPossibleWolfMoves state = filter (isFieldFreeWrapper state) [(Pos a b) | a <-
                               where possibleX = (x (wPosition state))
                                     possibleY = (y (wPosition state)) -- Wolf can go backwards
 
+                                    
+getPossibleWolfStates::State->[State]
+getPossibleWolfStates state = (map (moveWolf state) (filter (isFieldFreeWrapper state) [(Pos a b) | a <- [possibleX-1, possibleX+1], b <- [possibleY-1, possibleY+1]]))
+                              where possibleX = (x (wPosition state))
+                                    possibleY = (y (wPosition state)) -- Wolf can go backwards                        
+                                    
+                                    
+                                    
+                                    
                                     
 getPossibleSheepsMoves :: State -> [Position]
 getPossibleSheepsMoves state = getPossibleSheepMoves (sPosition state) state
@@ -77,9 +98,22 @@ getPossibleSheepMoves (z:zs) state = (filter (isFieldFreeWrapper state)[(Pos a p
                                      where possibleX = (x z)
                                            possibleY = (y z) + 1
 
---getPossibleSheepsStates::State->[State]
---getPossibleSheepsStates state =
+                                           -- pozycje owiec, stan, zwraca możliwe stany
+getPossibleSheepsStates::[Position]->State->[State]
+getPossibleSheepsStates [] _ = []
+getPossibleSheepsStates (z:zs) state = (map (moveSheep state z) (filter (isFieldFreeWrapper state)[(Pos a ((y z) + 1)) | a <- [(x z)-1, (x z)+1]]))
+                                            ++ (getPossibleSheepsStates zs state)
+
+
                                            
+-- Moves sheep from old position to new position
+moveSheep :: State -> Position -> Position -> State
+moveSheep state oldPos newPos = State (wPosition state) (sheepsPosition) 
+                                    where sheepsPosition = moveSheepFromTo (sPosition state) oldPos newPos
+ 
+moveSheepFromTo :: [Position] -> Position -> Position -> [Position]
+moveSheepFromTo (s:sheeps) oldPos newPos = if s==oldPos then newPos : sheeps
+                                                   else s : (moveSheepFromTo sheeps oldPos newPos)
 
 -- Checks is position free                                           
 isFieldFreeWrapper:: State->Position->Bool
@@ -172,14 +206,6 @@ printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state
 moveWolf :: State -> Position -> State
 moveWolf state newWPosition = State (newWPosition) (sPosition state)
 
--- Moves sheep from old position to new position
-moveSheep :: State -> Position -> Position -> State
-moveSheep state oldPos newPos = State (wPosition state) (sheepsPosition) 
-                                    where sheepsPosition = moveSheepFromTo (sPosition state) oldPos newPos
- 
-moveSheepFromTo :: [Position] -> Position -> Position -> [Position]
-moveSheepFromTo (s:sheeps) oldPos newPos = if s==oldPos then newPos : sheeps
-                                                   else s : (moveSheepFromTo sheeps oldPos newPos)
 
 
 {-
