@@ -19,10 +19,13 @@ data State = State { wPosition::Position,
                      
 
 -- Main function 
-main =  do 
+test =  do 
+
         printLine
         
         let state = getNewState
+        
+        
         let tree1 = createTree state 1
         let oceny = getChildValues(tree1)
         putStrLn (show oceny)
@@ -31,13 +34,14 @@ main =  do
  --       printTree 0 tree1 
         play state
 
-        let tree10 = createTree state 5
+        let tree10 = createTree state 3
         let tuple = minmax2 0 tree10
         let tuple2 = minmax3 0 tree10
-        printTree 0 tree10
+      --  printTree 0 tree10
         printActualBoard state
         putStrLn (show (tuple ))
         putStrLn (show (tuple2 ))
+        printActualBoard (snd tuple)
         --play state
 -- Tworzenie drzewa
 
@@ -92,7 +96,7 @@ getNextStates state position = if mod position 2 == 0 then getPossibleSheepsStat
                                                       else getPossibleWolfStates state 
 -- Funkcja celu dla drzewa
 evaluateState::State->Int
-evaluateState state = 10000 -  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
+evaluateState state =  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
                         where alpha1 = -4
                               alpha2 = -1
                               alpha3 = 4
