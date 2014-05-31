@@ -19,10 +19,13 @@ data State = State { wPosition::Position,
                      
 
 -- Main function 
-main =  do 
+test =  do 
+
         printLine
         
         let state = getNewState
+        
+        
         let tree1 = createTree state 1
         let oceny = getChildValues(tree1)
         putStrLn (show oceny)
@@ -31,11 +34,14 @@ main =  do
  --       printTree 0 tree1 
         play state
 
-        let tree10 = createTree state 2
+        let tree10 = createTree state 3
         let tuple = minmax2 0 tree10
-        printTree 0 tree10
+        let tuple2 = minmax3 0 tree10
+      --  printTree 0 tree10
         printActualBoard state
         putStrLn (show (tuple ))
+        putStrLn (show (tuple2 ))
+        printActualBoard (snd tuple)
         --play state
         putStrLn "Max ocena"
         putStrLn (show (getBest tree2))
@@ -59,9 +65,15 @@ minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then Tree  state (m
 
 minmax2::Int->Tree->(Int, State)
 minmax2 _ (Tree  state [] fValue) = ((evaluateState state), state)
-minmax2 depth (Tree  state tree fValue) = if mod depth 2 == 0 then getMaximumTuple (map (minmax2 (depth + 1)) tree)
-                                                              else getMinimumTuple (map (minmax2 (depth + 1)) tree)
+minmax2 0 (Tree  state tree fValue) =  getMaximumTuple (map (minmax2 (1)) tree)                                                        
+minmax2 depth (Tree  state tree fValue) = if mod depth 2 == 0 then (fst (getMaximumTuple (map (minmax2 (depth + 1)) tree)), state)
+                                                              else (fst (getMinimumTuple (map (minmax2 (depth + 1)) tree)), state)
 
+                                                              
+minmax3::Int->Tree->(Int, State)
+minmax3 _ (Tree  state [] fValue) = ((evaluateState state), state)                                                        
+minmax3 depth (Tree  state tree fValue) = if mod depth 2 == 0 then getMaximumTuple (map (minmax3 (depth + 1)) tree)
+                                                              else getMinimumTuple (map (minmax3 (depth + 1)) tree)                                                              
                                                               
 getMaximumTuple::[(Int, State)]->(Int, State)
 getMaximumTuple list = maximumBy (comparing fst) list
@@ -95,7 +107,7 @@ getNextStates state position = if mod position 2 == 0 then getPossibleSheepsStat
 
 -- Funkcja celu dla drzewa
 evaluateState::State->Int
-evaluateState state = 10000 -  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
+evaluateState state =  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
                         where alpha1 = -4
                               alpha2 = -1
                               alpha3 = 4
