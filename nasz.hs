@@ -22,9 +22,10 @@ main =  do
         printLine
         let state = getNewState
         let tree1 = createTree state 1
-        putStrLn (show tree1)
-        play state
-
+        printActualBoard state
+        putStrLn (show (evaluateState state ))
+        --play state
+-- Tworzenie drzewa
 createTree::State->Int->Tree
 createTree state depth = createTreeLevel depth 0 state 
 
@@ -32,7 +33,31 @@ createTreeLevel::Int->Int->State->Tree -- drzewo rodzic, glebokosc drzewa,
 createTreeLevel 0 _ state = Tree 0 state []
 createTreeLevel depth position state = if mod position 2 == 0 then Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeSheepsStates state))
                                                               else Tree 0 state (map (createTreeLevel (depth-1) (position+1)) (getFakeWolfStates state))
-                                                             
+
+-- Funkcja celu dla drzewa
+evaluateState::State->Int
+evaluateState state = alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
+                        where alpha1 = -4
+                              alpha2 = -1
+                              alpha3 = 4
+
+sheepDistribution::[Position]->Int
+sheepDistribution positions = (maxSheepY positions) - (minSheepY positions)
+
+maxSheepY::[Position]->Int
+maxSheepY [] = 0
+maxSheepY (z:zs) = max (y z) (maxSheepY zs)
+
+minSheepY::[Position]->Int
+minSheepY [] = 9999999999999
+minSheepY (z:zs) = min (y z) (minSheepY zs) 
+
+wolfNeighborhood::Position->[Position]->Int
+wolfNeighborhood _ [] = 0
+wolfNeighborhood wolfPos (z:zs) = (abs ((x wolfPos) - ( x z) )) + (abs ((y wolfPos) - ( y z) )) + (wolfNeighborhood wolfPos zs)                       
+
+--   
+ 
 getFakeSheepsStates::State->[State]
 getFakeSheepsStates _ = [State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1], State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 7 2]]
 
@@ -161,7 +186,7 @@ exitGame state = return ()
 
 -- Function    returns initial state of game                 
 getNewState :: State
-getNewState = State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
+getNewState = State (Pos 1 6) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
 
 -- Function    returns clear board - without wilf and sheeps
 getClearBoard :: [[String]]
