@@ -34,6 +34,7 @@ gameMenu state = do
                                            printLose
                                            mainMenu
     else do
+        printMovesTitle
         printPositions wolfPossibleMoves 1
         cmd <- getLine
         let choosenMove = toNumber cmd
@@ -73,6 +74,32 @@ makeMove n positions state = if n < 1  || n > (length positions) then do
                                                                                                              else
                                                                                                                 gameMenu (findAndMakeSheepMove stateAfterWolfMove)
 
+getClearBoard :: [[String]]
+getClearBoard =   [[" ", "1", "2", "3", "4", "5", "6", "7", "8"],
+                   ["1", ".", " ", ".", " ", ".", " ", ".", " "],
+                   ["2", " ", ".", " ", ".", " ", ".", " ", "."],
+                   ["3", ".", " ", ".", " ", ".", " ", ".", " "],
+                   ["4", " ", ".", " ", ".", " ", ".", " ", "."],
+                   ["5", ".", " ", ".", " ", ".", " ", ".", " "],
+                   ["6", " ", ".", " ", ".", " ", ".", " ", "."],
+                   ["7", ".", " ", ".", " ", ".", " ", ".", " "],
+                   ["8", " ", ".", " ", ".", " ", ".", " ", "."]]
+        
+printBoard :: [[String]] -> IO ()
+printBoard str = do
+            printBoardTitle
+            mapM_ putStrLn [ b | b <- [unwords list_str | list_str <- str]]
+                 
+printActualBoard ::State -> IO ()
+printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state) getClearBoard)  
+
+setBoard::Position->[Position]->[[String]]->[[String]]
+setBoard pos [] tab = updateMatrix tab "W" (y pos, x pos)
+setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (y z, x z))
+
+updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
+updateMatrix m x (r,c) =  take r m ++  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++ drop (r + 1) m                 
+                                                                                                                
 readFromFile = do
     printPutFilename
     fileName <- getLine
@@ -83,7 +110,9 @@ readSheepsPositions::[Int]->[Position]
 readSheepsPositions [] = []
 readSheepsPositions (x:y:positions) = (Pos x y) : (readSheepsPositions positions)
     
-readPositions False _ = mainMenu  
+readPositions False _ = do
+                        printWrongFilename
+                        mainMenu  
 
 
 readPositions True fileName = do
@@ -93,6 +122,21 @@ readPositions True fileName = do
                               let sPos = readSheepsPositions positions
                               let state = State wPos sPos
                               gameMenu state
+
+saveToFile state = do
+    printPutFilename
+    fileName <- getLine
+    handle <- openFile fileName WriteMode
+    savePositions ((wPosition state) : (sPosition state)) handle
+    hClose handle
+
+savePositions []  handle = do
+                            return()
+savePositions (z:zs)  handle = do
+                hPutStr handle (show (x z))
+                hPutStr handle (" ")
+                hPutStrLn handle (show (y z))
+                savePositions zs  handle
                               
 printLogo = do 
     putStrLn "         _                                                _,._    "
@@ -159,4 +203,21 @@ printPutFilename = do
     putStrLn ("|                                                                        |")
     putStrLn ("|                         PODAJ NAZWĘ PLIKU:                             |")
     putStrLn ("|                                                                        |")
+    putStrLn ("|------------------------------------------------------------------------|")
+    
+printWrongFilename = do
+    putStrLn ("|------------------------------------------------------------------------|")
+    putStrLn ("|                                                                        |")
+    putStrLn ("|                      NIEPOPRAWNA NAZWA PLIKU                           |")
+    putStrLn ("|                                                                        |")
+    putStrLn ("|------------------------------------------------------------------------|")
+    
+printBoardTitle  = do
+    putStrLn ("|------------------------------------------------------------------------|")
+    putStrLn ("|                       AKTUALNY STAN PLANSZY                            |")
+    putStrLn ("|------------------------------------------------------------------------|")
+
+printMovesTitle  = do
+    putStrLn ("|------------------------------------------------------------------------|")
+    putStrLn ("|                          DOSTĘPNE RUCHY                                |")
     putStrLn ("|------------------------------------------------------------------------|")

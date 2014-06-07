@@ -7,7 +7,6 @@ import Text.Read
 import System.IO
 import System.Directory
 
---Type that defines position on board
 data Position = Pos {x::Int, y::Int} deriving (Show)
 
 data Tree = Tree {state::State, tree::[Tree], funValue::Int} deriving (Show)
@@ -15,8 +14,6 @@ data Tree = Tree {state::State, tree::[Tree], funValue::Int} deriving (Show)
 instance Eq Position where
                 (Pos x1 y1) == (Pos x2 y2) = (x1 == x2) &&  (y1 == y2) 
 
-
---Global state - position of wolf and all sheeps
 data State = State { wPosition::Position,
                      sPosition::[Position]} deriving (Show)
 
@@ -48,10 +45,6 @@ getMaximumTuple list = maximumBy (comparing fst) list
 
 getMinimumTuple::[(Int, State)]->(Int, State)
 getMinimumTuple list = minimumBy (comparing fst) list
-
-
-getChildValues::Tree->[Int]                               
-getChildValues (Tree  state tree fValue)= map getValue tree
 
 getValue::Tree->Int
 getValue tree = (funValue tree)
@@ -191,43 +184,11 @@ isFieldFree wPos [] pos answer = if (x pos)>0 && (x pos)<9 && (y pos)>0 && (y po
                                     then True
                                     else False    
 isFieldFree wPos (s:sheeps) pos answer = isFieldFree wPos sheeps pos (s/=pos && answer)                                    
-                                
--- Function    returns initial state of game                 
+                                                
 getNewState :: State
 getNewState = State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
 
--- Function    returns clear board - without wilf and sheeps
-getClearBoard :: [[String]]
-getClearBoard =   [[" ", "1", "2", "3", "4", "5", "6", "7", "8"],
-                   ["1", ".", " ", ".", " ", ".", " ", ".", " "],
-                   ["2", " ", ".", " ", ".", " ", ".", " ", "."],
-                   ["3", ".", " ", ".", " ", ".", " ", ".", " "],
-                   ["4", " ", ".", " ", ".", " ", ".", " ", "."],
-                   ["5", ".", " ", ".", " ", ".", " ", ".", " "],
-                   ["6", " ", ".", " ", ".", " ", ".", " ", "."],
-                   ["7", ".", " ", ".", " ", ".", " ", ".", " "],
-                   ["8", " ", ".", " ", ".", " ", ".", " ", "."]]
-                   
-                   
--- Function set state on board               
-setBoard::Position->[Position]->[[String]]->[[String]]
-setBoard pos [] tab = updateMatrix tab "W" (y pos, x pos)
-setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (y z, x z))
-
-updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
-updateMatrix m x (r,c) =  take r m ++  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++ drop (r + 1) m
-
-
--- Function prints board on screen        
-printBoard :: [[String]] -> IO ()
-printBoard str = do
-            mapM_ putStrLn [ b | b <- [unwords list_str | list_str <- str]]
-        
--- Function prints boars with actual state         
-printActualBoard ::State -> IO ()
-printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state) getClearBoard)
-
-
+               
           
 -- Moves wolf to position
 moveWolf :: State -> Position -> State
@@ -237,19 +198,6 @@ moveWolf state newWPosition = State (newWPosition) (sPosition state)
 readInt :: String -> Int
 readInt = read
 
-saveToFile state = do
-    putStrLn "Podaj nazwę pliku:"
-    fileName <- getLine
-    handle <- openFile fileName WriteMode
-    savePositions ((wPosition state) : (sPosition state)) handle
-    hClose handle
 
-savePositions []  handle = do
-                            return()
-savePositions (z:zs)  handle = do
-                hPutStr handle (show (x z))
-                hPutStr handle (" ")
-                hPutStrLn handle (show (y z))
-                savePositions zs  handle
 
  
