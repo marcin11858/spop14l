@@ -345,3 +345,36 @@ printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state
 -- Moves wolf to position
 moveWolf :: State -> Position -> State
 moveWolf state newWPosition = State (newWPosition) (sPosition state)
+
+saveToFile state = do
+    putStrLn "Podaj nazwę pliku:"
+    fileName <- getLine
+    handle <- openFile fileName WriteMode
+    savePositions (sPosition state) (wPosition state) handle
+    hClose handle
+
+savePositions [] wolfPos handle = do
+                                  hPutStr handle (show (x wolfPos))
+                                  hPutStr handle (" ")
+                                  hPutStrLn handle (show (y wolfPos))
+                                  return()
+savePositions (z:zs) wolfPos handle = do
+                hPutStr handle (show (x z))
+                hPutStr handle (" ")
+                hPutStrLn handle (show (y z))
+                savePositions zs wolfPos handle
+{-
+aveToFile tasks = do
+	putStrLn "Podaj nazwę pliku:"
+	fileName <- getLine
+	handle <- openFile fileName WriteMode
+	saveTasks tasks handle
+	hClose handle
+
+saveTasks [] _ = do return()
+saveTasks (x:xs) handle = do
+	hPutStrLn handle (name x)
+	hPutStrLn handle (show(time x))
+	hPutStrLn handle (show(repeatability x))
+	hPutStrLn handle (show(isCompleted x))
+	saveTasks xs handle-}

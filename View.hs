@@ -41,8 +41,9 @@ gameMenu state = do
         cmd <- getLine
         let choosenMove = toNumber cmd
         if choosenMove == -1 then case cmd of
-                                       'z':[] -> do 
-                                                 mainMenu
+                                       'z':[] -> do
+                                                 saveToFile state
+                                                 gameMenu state
                                        'x':[] -> do 
                                                  mainMenu
                                        _      -> do 
