@@ -21,7 +21,7 @@ data State = State { wPosition::Position,
 
 findAndMakeSheepMove::State->State
 findAndMakeSheepMove state = do
-                             let tree = createTree state 3
+                             let tree = createTree state 6
                              snd (minmax 0 tree)
 
 -- Main function 
@@ -96,10 +96,11 @@ getNextStates state position = if mod position 2 == 0 then getPossibleSheepsStat
                                                       else getPossibleWolfStates state 
 -- Funkcja celu dla drzewa
 evaluateState::State->Int
-evaluateState state =  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state))
+evaluateState state =  alpha1 * (sheepDistribution (sPosition state)) + alpha2 * (wolfNeighborhood (wPosition state) (sPosition state)) + alpha3 * ( y (wPosition state)) + alpha4 * (getCountPossibleMoves state)
                         where alpha1 = -4
                               alpha2 = -1
                               alpha3 = 4
+                              alpha4 = 4
 
 sheepDistribution::[Position]->Int
 sheepDistribution positions = (maxSheepY positions) - (minSheepY positions)
@@ -114,7 +115,10 @@ minSheepY (z:zs) = min (y z) (minSheepY zs)
 
 wolfNeighborhood::Position->[Position]->Int
 wolfNeighborhood _ [] = 0
-wolfNeighborhood wolfPos (z:zs) = (abs ((x wolfPos) - ( x z) )) + (abs ((y wolfPos) - ( y z) )) + (wolfNeighborhood wolfPos zs)                       
+wolfNeighborhood wolfPos (z:zs) = (abs ((x wolfPos) - ( x z) )) + (abs ((y wolfPos) - ( y z) )) + (wolfNeighborhood wolfPos zs) 
+
+getCountPossibleMoves::State->Int
+getCountPossibleMoves state = if length (getPossibleWolfMoves state) ==  0 then 99 else 4 -  length (getPossibleWolfMoves state)                   
 
 --   
  

@@ -45,7 +45,9 @@ gameMenu state = do
                                                  mainMenu
                                        'x':[] -> do 
                                                  mainMenu
-                                       _      -> do putStrLn ("Niepoprawny wybór")
+                                       _      -> do 
+                                                 putStrLn ("Niepoprawny wybór")
+                                                 gameMenu state
                              else
                                 makeMove choosenMove wolfPossibleMoves state
     
