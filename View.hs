@@ -33,17 +33,21 @@ gameMenu state = do
     printActualBoard state
     putStrLn ("")
     let wolfPossibleMoves = getPossibleWolfMoves state
-    printPositions wolfPossibleMoves 1
-    cmd <- getLine
-    let choosenMove = toNumber cmd
-    if choosenMove == -1 then case cmd of
-                                   'z':[] -> do 
-                                             mainMenu
-                                   'x':[] -> do 
-                                             mainMenu
-                                   _      -> do putStrLn ("Niepoprawny wybór")
-                 else
-                    makeMove choosenMove wolfPossibleMoves state
+    if (length wolfPossibleMoves) == 0 then do
+                                           putStrLn ("Przegrales")
+                                           mainMenu
+    else do
+        printPositions wolfPossibleMoves 1
+        cmd <- getLine
+        let choosenMove = toNumber cmd
+        if choosenMove == -1 then case cmd of
+                                       'z':[] -> do 
+                                                 mainMenu
+                                       'x':[] -> do 
+                                                 mainMenu
+                                       _      -> do putStrLn ("Niepoprawny wybór")
+                             else
+                                makeMove choosenMove wolfPossibleMoves state
     
 toNumber line = 
     let 
