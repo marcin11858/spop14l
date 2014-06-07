@@ -1,4 +1,4 @@
-module Logic where
+module Logic  where
 
 import Control.Monad 
 import Data.List
@@ -18,7 +18,11 @@ instance Eq Position where
 --Global state - position of wolf and all sheeps
 data State = State { wPosition::Position,
                      sPosition::[Position]} deriving (Show)
-                     
+
+findAndMakeSheepMove::State->State
+findAndMakeSheepMove state = do
+                             let tree = createTree state 3
+                             snd (minmax 0 tree)
 
 -- Main function 
 test =  do 
@@ -37,13 +41,11 @@ test =  do
         play state
 
         let tree10 = createTree state 3
-        let tuple = minmax2 0 tree10
-        let tuple2 = minmax3 0 tree10
+--        let tuple = minmax2 0 tree10
       --  printTree 0 tree10
         printActualBoard state
-        putStrLn (show (tuple ))
-        putStrLn (show (tuple2 ))
-        printActualBoard (snd tuple)
+--        putStrLn (show (tuple ))
+--        printActualBoard (snd tuple)
         --play state
 -- Tworzenie drzewa
 
@@ -55,23 +57,19 @@ createTreeLevel 0 _ state = Tree  state [] (evaluateState state)
 createTreeLevel depth position state =  Tree  state (map (createTreeLevel (depth-1) (position+1)) (getNextStates state position)) (-1)
 
 
-minmax::Int->Tree->Tree
-minmax _ (Tree  state [] fValue) = Tree  state [] (evaluateState state)
-minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then Tree  state (map (minmax (depth+1)) tree) (maximum (map getValue tree) )
-                                                             else Tree  state (map (minmax (depth+1)) tree) (minimum (map getValue tree) )
 
-minmax2::Int->Tree->(Int, State)
-minmax2 _ (Tree  state [] fValue) = ((evaluateState state), state)
-minmax2 0 (Tree  state tree fValue) =  getMaximumTuple (map (minmax2 (1)) tree)                                                        
-minmax2 depth (Tree  state tree fValue) = if mod depth 2 == 0 then (fst (getMaximumTuple (map (minmax2 (depth + 1)) tree)), state)
-                                                              else (fst (getMinimumTuple (map (minmax2 (depth + 1)) tree)), state)
+minmax::Int->Tree->(Int, State)
+minmax _ (Tree  state [] fValue) = ((evaluateState state), state)
+minmax 0 (Tree  state tree fValue) =  getMaximumTuple (map (minmax (1)) tree)                                                        
+minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then (fst (getMaximumTuple (map (minmax (depth + 1)) tree)), state)
+                                                              else (fst (getMinimumTuple (map (minmax (depth + 1)) tree)), state)
 
-                                                              
-minmax3::Int->Tree->(Int, State)
-minmax3 _ (Tree  state [] fValue) = ((evaluateState state), state)                                                        
-minmax3 depth (Tree  state tree fValue) = if mod depth 2 == 0 then getMaximumTuple (map (minmax3 (depth + 1)) tree)
-                                                              else getMinimumTuple (map (minmax3 (depth + 1)) tree)                                                              
-                                                              
+{-                                                              
+minmax::Int->Tree->(Int, State)
+minmax _ (Tree  state [] fValue) = ((evaluateState state), state)                                                        
+minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then getMaximumTuple (map (minmax (depth + 1)) tree)
+                                                              else getMinimumTuple (map (minmax (depth + 1)) tree)                                                              
+ -}                                                             
 getMaximumTuple::[(Int, State)]->(Int, State)
 getMaximumTuple list = maximumBy (comparing fst) list
 
@@ -152,6 +150,7 @@ play state = do
             let sWolfs  = getPossibleWolfStates state2
             --printStates sStates
             printStates sWolfs
+
             
 
             --let sMoves = getPossibleSheepMoves state
@@ -172,17 +171,20 @@ printState state = do   putStr "W:("
                         putStr ","     
                         putStr (show(y (wPosition state))) 
                         putStr ") O:[" 
-                        printSheepsPos (sPosition state)
+                        printPositions (sPosition state) 1
                         putStr "]" 
                         
-printSheepsPos::[Position] -> IO () 
-printSheepsPos [] = putStr ""                  
-printSheepsPos (p:pos)  = do    putStr"("
+
+printPositions::[Position]->Int-> IO () 
+printPositions [] _ = putStr ""                  
+printPositions (p:pos) n  = do  putStr "["
+                                putStr ( show n)
+                                putStr "] -> ("
                                 putStr (show(x p)) 
                                 putStr ","     
                                 putStr (show(y p)) 
-                                putStr ")"
-                                printSheepsPos pos
+                                putStrLn ")"
+                                printPositions pos (n+1)
 
 
        
@@ -206,12 +208,6 @@ printTree depth (Tree  state tree fValue)  =
                                             putStrLn "" 
                                             (mapM_ (printTree (depth+1)) tree )
 
-
-{-
-preorder :: Tree a -> [a]
-preorder Empty = []
-preorder (Node a l r) = [a] ++ preorder l ++ preorder r
--}
 
 --Returns all available moves for wolf 
 getPossibleWolfMoves :: State -> [Position]
