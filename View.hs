@@ -97,6 +97,17 @@ setBoard::Position->[Position]->[[String]]->[[String]]
 setBoard pos [] tab = updateMatrix tab "W" (y pos, x pos)
 setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (y z, x z))
 
+printPositions::[Position]->Int-> IO () 
+printPositions [] _ = putStr ""                  
+printPositions (p:pos) n  = do  putStr "["
+                                putStr ( show n)
+                                putStr "] -> ("
+                                putStr (show(x p)) 
+                                putStr ","     
+                                putStr (show(y p)) 
+                                putStrLn ")"
+                                printPositions pos (n+1)
+
 updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
 updateMatrix m x (r,c) =  take r m ++  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++ drop (r + 1) m                 
                                                                                                                 
@@ -139,18 +150,19 @@ savePositions (z:zs)  handle = do
                 savePositions zs  handle
                               
 printLogo = do 
-    putStrLn "         _                                                _,._    "
-    putStrLn "        / \\      _-'                                 __.'   _)   "
-    putStrLn "      _/|  \\-''- _ /                                <_,)'.-\"a\\ "
-    putStrLn " __-' { |          \\          WILK                    /' (    \\ "
-    putStrLn "     /              \\                     _.-----..,-'   (`\"--^ "
-    putStrLn "     /       \"o.  |o }          I        //              |       "
-    putStrLn "     |            \\ ;                   (|   `;      ,   |       "
-    putStrLn "                   ',         OWCE         \\   ;.----/  ,/       "
-    putStrLn "        \\_         __\\                    ) // /   | |\\ \\     "
-    putStrLn "          ''-_    \\.//                     \\ \\\\`\\   | |/ /   "
-    putStrLn "            / '-____'                        \\ \\\\ \\  | |\\/   "
-    putStrLn "           /                                  `\" `\"  `\"`       "
+    putStrLn "         _                                                      _,._    "
+    putStrLn "        / \\      _-'                                       __.'   _)   "
+    putStrLn "      _/|  \\-''- _ /                                      <_,)'.-\"a\\ "
+    putStrLn " __-' { |          \\             WILK                       /' (    \\ "
+    putStrLn "     /              \\                           _.-----..,-'   (`\"--^ "
+    putStrLn "     /       \"o.  |o }             I           //              |       "
+    putStrLn "     |            \\ ;                         (|   `;      ,   |       "
+    putStrLn "                   ',            OWCE            \\   ;.----/  ,/       "
+    putStrLn "        \\_         __\\                          ) // /   | |\\ \\     "
+    putStrLn "          ''-_    \\.//                           \\ \\\\`\\   | |/ /   "
+    putStrLn "            / '-____'                              \\ \\\\ \\  | |\\/   "
+    putStrLn "           /                                        `\" `\"  `\"`       "
+    putStrLn "                                       Autorzy: Adam Prus, Marcin Wlazły"
 
 printMainMenu = do 
     putStrLn ("|------------------------------------------------------------------------|")

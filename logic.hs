@@ -46,10 +46,6 @@ getMaximumTuple list = maximumBy (comparing fst) list
 getMinimumTuple::[(Int, State)]->(Int, State)
 getMinimumTuple list = minimumBy (comparing fst) list
 
-getValue::Tree->Int
-getValue tree = (funValue tree)
-
-
 getNextStates::State->Int->[State]
 getNextStates state position = if mod position 2 == 0 then getPossibleSheepsStates (sPosition state) state
                                                       else getPossibleWolfStates state 
@@ -79,76 +75,16 @@ wolfNeighborhood wolfPos (z:zs) = (abs ((x wolfPos) - ( x z) )) + (abs ((y wolfP
 getCountPossibleMoves::State->Int
 getCountPossibleMoves state = if length (getPossibleWolfMoves state) ==  0 then 99 else 4 -  length (getPossibleWolfMoves state)                   
 
-
-printStates::[State] -> IO () 
-printStates [] = putStrLn "KONIEC----------------------------------"
-printStates (s:states)= do  putStrLn "---------------------------------------"
-                            printState s
-                            putStrLn "---------------------------------------"
-                            printStates states
-             
-printState::State -> IO () 
-printState state = do   putStr "W:("  
-                        putStr (show(x (wPosition state))) 
-                        putStr ","     
-                        putStr (show(y (wPosition state))) 
-                        putStr ") O:[" 
-                        printPositions (sPosition state) 1
-                        putStr "]" 
-                        
-
-printPositions::[Position]->Int-> IO () 
-printPositions [] _ = putStr ""                  
-printPositions (p:pos) n  = do  putStr "["
-                                putStr ( show n)
-                                putStr "] -> ("
-                                putStr (show(x p)) 
-                                putStr ","     
-                                putStr (show(y p)) 
-                                putStrLn ")"
-                                printPositions pos (n+1)
-
-
-       
-printTree::Int->Tree -> IO () 
-printTree depth (Tree  state [] fValue)  = do   
-                                            putStr " Poziom: "
-                                            putStr (show depth)
-                                            putStr " Ocena: "
-                                            putStr (show fValue)
-                                            putStr "   "
-                                            printState state
-                                            putStrLn ""
-printTree depth (Tree  state tree fValue)  = 
-                                         do 
-                                            putStr " Poziom: "
-                                            putStr (show depth)
-                                            putStr " Ocena: "
-                                            putStr (show fValue)
-                                            putStr "   "
-                                            printState state
-                                            putStrLn "" 
-                                            (mapM_ (printTree (depth+1)) tree )
-
-
---Returns all available moves for wolf 
 getPossibleWolfMoves :: State -> [Position]
 getPossibleWolfMoves state = filter (isFieldFreeWrapper state) [(Pos a b) | a <- [possibleX-1, possibleX+1], b <- [possibleY-1, possibleY+1]]
                               where possibleX = (x (wPosition state))
-                                    possibleY = (y (wPosition state)) -- Wolf can go backwards
+                                    possibleY = (y (wPosition state)) 
 
                                     
 getPossibleWolfStates::State->[State]
 getPossibleWolfStates state = (map (moveWolf state) (filter (isFieldFreeWrapper state) [(Pos a b) | a <- [possibleX-1, possibleX+1], b <- [possibleY-1, possibleY+1]]))
                               where possibleX = (x (wPosition state))
-                                    possibleY = (y (wPosition state)) -- Wolf can go backwards                        
-                                    
-                                    
-                                    
-                                    
-                                    
-getPossibleSheepsMoves :: State -> [Position]
-getPossibleSheepsMoves state = getPossibleSheepMoves (sPosition state) state
+                                    possibleY = (y (wPosition state))                        
 
 getPossibleSheepMoves :: [Position] -> State -> [Position]
 getPossibleSheepMoves [] _ = []
@@ -162,9 +98,6 @@ getPossibleSheepsStates [] _ = []
 getPossibleSheepsStates (z:zs) state = (map (moveSheep state z) (filter (isFieldFreeWrapper state)[(Pos a ((y z) + 1)) | a <- [(x z)-1, (x z)+1]]))
                                             ++ (getPossibleSheepsStates zs state)
 
-
-                                           
--- Moves sheep from old position to new position
 moveSheep :: State -> Position -> Position -> State
 moveSheep state oldPos newPos = State (wPosition state) (sheepsPosition) 
                                     where sheepsPosition = moveSheepFromTo (sPosition state) oldPos newPos
@@ -172,12 +105,10 @@ moveSheep state oldPos newPos = State (wPosition state) (sheepsPosition)
 moveSheepFromTo :: [Position] -> Position -> Position -> [Position]
 moveSheepFromTo (s:sheeps) oldPos newPos = if s==oldPos then newPos : sheeps
                                                    else s : (moveSheepFromTo sheeps oldPos newPos)
-
--- Checks is position free                                           
+                                          
 isFieldFreeWrapper:: State->Position->Bool
 isFieldFreeWrapper state pos = isFieldFree (wPosition state) (sPosition state) pos True
--- Checks is position free 
---Args: WolfPosition, [SheepPositions], position, True
+
 isFieldFree :: Position->[Position]-> Position -> Bool -> Bool                                      
 isFieldFree wPos [] pos answer = if (x pos)>0 && (x pos)<9 && (y pos)>0 && (y pos)<9 
                                     && pos/=wPos && answer
@@ -188,9 +119,6 @@ isFieldFree wPos (s:sheeps) pos answer = isFieldFree wPos sheeps pos (s/=pos && 
 getNewState :: State
 getNewState = State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
 
-               
-          
--- Moves wolf to position
 moveWolf :: State -> Position -> State
 moveWolf state newWPosition = State (newWPosition) (sPosition state)
 
