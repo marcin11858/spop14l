@@ -233,6 +233,7 @@ printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state
 moveWolf :: State -> Position -> State
 moveWolf state newWPosition = State (newWPosition) (sPosition state)
 
+-- Funkcja pomocnicza 
 readInt :: String -> Int
 readInt = read
 
