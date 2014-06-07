@@ -5,6 +5,7 @@ import Data.List
 import Data.Ord
 import Text.Read
 import System.IO
+import System.Directory
 
 --Type that defines position on board
 data Position = Pos {x::Int, y::Int} deriving (Show)
@@ -24,29 +25,6 @@ findAndMakeSheepMove state = do
                              let tree = createTree state 6
                              snd (minmax 0 tree)
 
--- Main function 
-test =  do 
-
-        printLine
-        
-        let state = getNewState
-        
-        
-        let tree1 = createTree state 1
-        let oceny = getChildValues(tree1)
-        putStrLn (show oceny)
-        --putStrLn (show tree1)
-        printLine
- --       printTree 0 tree1 
-        play state
-
-        let tree10 = createTree state 3
---        let tuple = minmax2 0 tree10
-      --  printTree 0 tree10
-        printActualBoard state
---        putStrLn (show (tuple ))
---        printActualBoard (snd tuple)
-        --play state
 -- Tworzenie drzewa
 
 createTree::State->Int->Tree
@@ -64,24 +42,12 @@ minmax 0 (Tree  state tree fValue) =  getMaximumTuple (map (minmax (1)) tree)
 minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then (fst (getMaximumTuple (map (minmax (depth + 1)) tree)), state)
                                                               else (fst (getMinimumTuple (map (minmax (depth + 1)) tree)), state)
 
-{-                                                              
-minmax::Int->Tree->(Int, State)
-minmax _ (Tree  state [] fValue) = ((evaluateState state), state)                                                        
-minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then getMaximumTuple (map (minmax (depth + 1)) tree)
-                                                              else getMinimumTuple (map (minmax (depth + 1)) tree)                                                              
- -}                                                             
+                                                            
 getMaximumTuple::[(Int, State)]->(Int, State)
 getMaximumTuple list = maximumBy (comparing fst) list
 
 getMinimumTuple::[(Int, State)]->(Int, State)
 getMinimumTuple list = minimumBy (comparing fst) list
-{-
-play::GameTree->Int
-play (GameTree p []) = evalState p
-play (GameTree (White,_) xs) = maximum (map play xs)
-play (GameTree (Black,_) xs) = minimum (map play xs)                               
--}
-
 
 
 getChildValues::Tree->[Int]                               
@@ -120,48 +86,7 @@ wolfNeighborhood wolfPos (z:zs) = (abs ((x wolfPos) - ( x z) )) + (abs ((y wolfP
 getCountPossibleMoves::State->Int
 getCountPossibleMoves state = if length (getPossibleWolfMoves state) ==  0 then 99 else 4 -  length (getPossibleWolfMoves state)                   
 
---   
- 
-getFakeSheepsStates::State->[State]
-getFakeSheepsStates _ = [State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1], State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 7 2]]
 
-getFakeWolfStates::State->[State] 
-getFakeWolfStates _ = [State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1], State (Pos 2 7) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]]
-
-play :: State -> IO ()  
-play state = do        
-            printActualBoard state
-            
---            input <- getLine
-    --        putStrLn ( "INPUT " ++ input)
-            if isFieldFreeWrapper state (Pos 8 1) then  putStrLn "Pole wolne"
-                                            else  putStrLn "Pole zajęte"
-
-
-
-            
-            
-            
-            let state2=moveSheep state (Pos 4 1) (Pos 4 3)
-            let wMoves = getPossibleWolfMoves state2
-            
-            let state2=moveWolf state (Pos 1 2)
-            printActualBoard state2
-
-            let wMoves = getPossibleSheepsMoves state
-            
-            let sStates = getPossibleSheepsStates (sPosition state) state
-            let sWolfs  = getPossibleWolfStates state2
-            --printStates sStates
-            printStates sWolfs
-
-            
-
-            --let sMoves = getPossibleSheepMoves state
-        --    case lookup input chooseOption of 
-          --          Just action -> action state -- If it is we apply this action
-            --        Nothing     -> putStrLn ( "INPUT " ++ input)
-   
 printStates::[State] -> IO () 
 printStates [] = putStrLn "KONIEC----------------------------------"
 printStates (s:states)= do  putStrLn "---------------------------------------"
@@ -267,31 +192,6 @@ isFieldFree wPos [] pos answer = if (x pos)>0 && (x pos)<9 && (y pos)>0 && (y po
                                     else False    
 isFieldFree wPos (s:sheeps) pos answer = isFieldFree wPos sheeps pos (s/=pos && answer)                                    
                                 
-
-
-
-chooseOption :: [(String, State -> IO ())]  
-chooseOption =  [("n", newGame),
-                 ("s", saveGame),
-                 ("l", loadGame),
-                 ("q", exitGame)]    
-
---Starts new Game 
-newGame :: State -> IO() 
-newGame state = test
-
---Starts new Game 
-saveGame :: State -> IO() 
-saveGame state = test
-
---Starts new Game 
-loadGame :: State -> IO() 
-loadGame state = test
---Ends a game
-exitGame :: State -> IO() 
-exitGame state = return ()
-
-
 -- Function    returns initial state of game                 
 getNewState :: State
 getNewState = State (Pos 1 8) [Pos 2 1 ,Pos 4 1, Pos 6 1, Pos 8 1]     
@@ -317,20 +217,7 @@ setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (y z, x z))
 updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
 updateMatrix m x (r,c) =  take r m ++  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++ drop (r + 1) m
 
--- PRINT FUNCTIONS
 
-printLine :: IO()  
-printLine = do putStrLn ""               
-    
-printMenu :: IO()      
-printMenu = do
-                putStrLn "WILK I OWCE"
-                putStrLn "Menu:"
-                putStrLn " n -> Nowa gra"
-                putStrLn " l -> Wczytaj grę"
-                putStrLn " s -> Zapisz grę"
-                putStrLn " q -> Wyjdź z gry"
-                
 -- Function prints board on screen        
 printBoard :: [[String]] -> IO ()
 printBoard str = do
@@ -346,35 +233,22 @@ printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state
 moveWolf :: State -> Position -> State
 moveWolf state newWPosition = State (newWPosition) (sPosition state)
 
+readInt :: String -> Int
+readInt = read
+
 saveToFile state = do
     putStrLn "Podaj nazwę pliku:"
     fileName <- getLine
     handle <- openFile fileName WriteMode
-    savePositions (sPosition state) (wPosition state) handle
+    savePositions ((wPosition state) : (sPosition state)) handle
     hClose handle
 
-savePositions [] wolfPos handle = do
-                                  hPutStr handle (show (x wolfPos))
-                                  hPutStr handle (" ")
-                                  hPutStrLn handle (show (y wolfPos))
-                                  return()
-savePositions (z:zs) wolfPos handle = do
+savePositions []  handle = do
+                            return()
+savePositions (z:zs)  handle = do
                 hPutStr handle (show (x z))
                 hPutStr handle (" ")
                 hPutStrLn handle (show (y z))
-                savePositions zs wolfPos handle
-{-
-aveToFile tasks = do
-	putStrLn "Podaj nazwę pliku:"
-	fileName <- getLine
-	handle <- openFile fileName WriteMode
-	saveTasks tasks handle
-	hClose handle
+                savePositions zs  handle
 
-saveTasks [] _ = do return()
-saveTasks (x:xs) handle = do
-	hPutStrLn handle (name x)
-	hPutStrLn handle (show(time x))
-	hPutStrLn handle (show(repeatability x))
-	hPutStrLn handle (show(isCompleted x))
-	saveTasks xs handle-}
+ 

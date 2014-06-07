@@ -16,10 +16,9 @@ mainMenu = do
     case cmd of
         'n':_ -> do
                  let newState = getNewState
-                 
                  gameMenu newState
         'w':_ -> do
-                 mainMenu
+                 readFromFile
         'x':_ -> do
                  putStrLn ("Koniec")
         _ -> do
@@ -75,5 +74,25 @@ makeMove n positions state = if n < 1  || n > (length positions) then do
                                                                                                                 mainMenu
                                                                                                              else
                                                                                                                 gameMenu (findAndMakeSheepMove stateAfterWolfMove)
-        
+
+readFromFile = do
+    putStrLn "Podaj nazwę pliku"
+    fileName <- getLine
+    fileExists <- doesFileExist fileName
+    readPositions fileExists fileName
+
+readSheepsPositions::[Int]->[Position]
+readSheepsPositions [] = []
+readSheepsPositions (x:y:positions) = (Pos x y) : (readSheepsPositions positions)
     
+readPositions False _ = mainMenu  
+
+
+readPositions True fileName = do
+                              content <- readFile fileName
+                              let xTmp:yTmp:positions = map readInt . words $ content  
+                              let wPos = Pos xTmp yTmp
+                              let sPos = readSheepsPositions positions
+                              let state = State wPos sPos
+                              gameMenu state
+ 
