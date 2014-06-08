@@ -32,14 +32,16 @@ data State = State { wPosition::Position,
  -- Funkcja zwracjąca ruch owcy, tworzy drzewo i algorytmem minmax znajduje najlepszy ruch. Tu również podaje się poziom drzewa.                 
 findAndMakeSheepMove::State->State
 findAndMakeSheepMove state = do
-                             let tree = createTree state 4
+                             let tree = createTree state 5
                              snd (minmax 0 tree)
 
 -- Tworzenie drzewa: główna fukcnja, która wywołuje funkcję rekurencyjną, przyjmuje stan wierzchołka korzenia oraz jego poziom zagłębienia
+-- [1] - stan początkowy
+-- [2] - liczba poziomów drzewa
 createTree::State->Int->Tree
 createTree state depth = createTreeLevel depth 0 state 
 
--- Tworzenie drzewa: funkcja rekurencyjna, która operuje na ...
+-- Tworzenie drzewa: funkcja rekurencyjna, która operuje na kolejych poziomach drzewa
 createTreeLevel::Int->Int->State->Tree -- drzewo rodzic, glebokosc drzewa, 
 createTreeLevel 0 _ state = Tree  state [] (evaluateState state)
 createTreeLevel depth position state =  Tree  state (map (createTreeLevel (depth-1) (position+1)) (getNextStates state position)) (-1)
@@ -56,6 +58,7 @@ minmax depth (Tree  state tree fValue) = if mod depth 2 == 0 then (fst (getMaxim
 -- Funkcja zwracająca parę (ocena, stan) o największej  wartości oceny z listy par (ocena, stan)                                                    
 getMaximumTuple::[(Int, State)]->(Int, State)
 getMaximumTuple list = maximumBy (comparing fst) list
+
 -- Funkcja zwracająca parę (ocena, stan) o najmniejszej wartości oceny z listy par (ocena, stan)   
 getMinimumTuple::[(Int, State)]->(Int, State)
 getMinimumTuple list = minimumBy (comparing fst) list
@@ -91,7 +94,7 @@ wolfNeighborhood::Position->[Position]->Int
 wolfNeighborhood _ [] = 0
 wolfNeighborhood wolfPos (z:zs) = (abs ((x wolfPos) - ( x z) )) + (abs ((y wolfPos) - ( y z) )) + (wolfNeighborhood wolfPos zs) 
 
--- Kryterium 4 - ...
+-- Kryterium 4 - Liczba możliwych ruchów wilka
 getCountPossibleMoves::State->Int
 getCountPossibleMoves state = if length (getPossibleWolfMoves state) ==  0 then 99 else 4 -  length (getPossibleWolfMoves state)                   
 
@@ -106,14 +109,14 @@ getPossibleWolfStates::State->[State]
 getPossibleWolfStates state = (map (moveWolf state) (filter (isFieldFreeWrapper state) [(Pos a b) | a <- [possibleX-1, possibleX+1], b <- [possibleY-1, possibleY+1]]))
                               where possibleX = (x (wPosition state))
                                     possibleY = (y (wPosition state))                        
-
+-- Możliwe ruchy owiec
 getPossibleSheepMoves :: [Position] -> State -> [Position]
 getPossibleSheepMoves [] _ = []
 getPossibleSheepMoves (z:zs) state = (filter (isFieldFreeWrapper state)[(Pos a possibleY) | a <- [possibleX-1, possibleX+1]]) ++ (getPossibleSheepMoves zs state) 
                                      where possibleX = (x z)
                                            possibleY = (y z) + 1
 
-
+-- Możliwe stany planyszy po ruchu owiec
 getPossibleSheepsStates::[Position]->State->[State]
 getPossibleSheepsStates [] _ = []
 getPossibleSheepsStates (z:zs) state = (map (moveSheep state z) (filter (isFieldFreeWrapper state)[(Pos a ((y z) + 1)) | a <- [(x z)-1, (x z)+1]]))

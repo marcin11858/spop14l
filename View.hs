@@ -55,7 +55,8 @@ gameMenu state = do
                                                  gameMenu state
                              else
                                 makeMove choosenMove wolfPossibleMoves state
-    
+
+-- Pomocnicza funkcja zamieniająca tekst na liczbę                                
 toNumber line = 
     let 
         correctLength = length line > 0
@@ -65,7 +66,8 @@ toNumber line =
         if( correctLength && correctDigit)
             then read digit :: Int
             else -1
-            
+ 
+-- Funkcja odpowiedzialana  za wykonanie ruchu wilka, a nastepnie owiec
 makeMove::Int->[Position]->State->IO()
 makeMove _ [] _ = do printWin
 makeMove n positions state = if n < 1  || n > (length positions) then do
@@ -129,11 +131,12 @@ readFromFile = do
     fileExists <- doesFileExist fileName
     readPositions fileExists fileName
 
+-- Funkcja odczytująca pozycje owiec z pliku
 readSheepsPositions::[Int]->[Position]
 readSheepsPositions [] = []
 readSheepsPositions (x:y:positions) = (Pos x y) : (readSheepsPositions positions)
     
-
+-- Funkcja odczytująca pozycję wilka i owiec z pliku
 readPositions False _ = do
                         printWrongFilename
                         mainMenu  
@@ -146,6 +149,7 @@ readPositions True fileName = do
                               let sPos = readSheepsPositions positions
                               let state = State wPos sPos
                               gameMenu state
+                              
 -- Zapis stanu do pliku
 saveToFile state = do
     printPutFilename
@@ -153,6 +157,7 @@ saveToFile state = do
     handle <- openFile fileName WriteMode
     savePositions ((wPosition state) : (sPosition state)) handle
     hClose handle
+    
 -- Zapis do pliku jest realizowany przez zapis współrzędnych wilka, a później linia po linii owiec
 savePositions []  handle = do
                             return()
