@@ -1,3 +1,6 @@
+--SPOP 14L, Wilk i owce, Adam Prus, Marcin Wlazły 
+
+-- Moduł odpowiadający za widok - wyświetlanie gry
 module View where 
 
 import Logic
@@ -6,10 +9,12 @@ import Data.Char
 import System.IO
 import System.Directory
 
+--Funkcja startująca grę
 startGame = do
             printLogo
             mainMenu
 
+-- Funkcja drukuje Menu i czeka na reakcję użytkownika
 mainMenu = do
     printMainMenu
     cmd <- getLine
@@ -24,7 +29,8 @@ mainMenu = do
         _ -> do
              printWrongOption
              mainMenu
-             
+     
+ -- Funkcja zawierająca pętlę gry
 gameMenu state = do
     printGameMenu
     printActualBoard state
@@ -73,7 +79,7 @@ makeMove n positions state = if n < 1  || n > (length positions) then do
                                                                                                                 mainMenu
                                                                                                              else
                                                                                                                 gameMenu (findAndMakeSheepMove stateAfterWolfMove)
-
+ -- Funkcja zwraca czystą planszę gry
 getClearBoard :: [[String]]
 getClearBoard =   [[" ", "1", "2", "3", "4", "5", "6", "7", "8"],
                    ["1", ".", " ", ".", " ", ".", " ", ".", " "],
@@ -84,19 +90,23 @@ getClearBoard =   [[" ", "1", "2", "3", "4", "5", "6", "7", "8"],
                    ["6", " ", ".", " ", ".", " ", ".", " ", "."],
                    ["7", ".", " ", ".", " ", ".", " ", ".", " "],
                    ["8", " ", ".", " ", ".", " ", ".", " ", "."]]
-        
+      
+ -- Funkcja drukuje planszę z postaci tablicy Stringów  
 printBoard :: [[String]] -> IO ()
 printBoard str = do
             printBoardTitle
             mapM_ putStrLn [ b | b <- [unwords list_str | list_str <- str]]
-                 
+      
+ -- Funkcja drukuje planszę na podstwaie stanu gry- główna funkcja wyświetlająca stan planszy
 printActualBoard ::State -> IO ()
 printActualBoard state = printBoard (setBoard (wPosition state) (sPosition state) getClearBoard)  
 
+ -- Funkcja ustawia pozycje na planszy
 setBoard::Position->[Position]->[[String]]->[[String]]
 setBoard pos [] tab = updateMatrix tab "W" (y pos, x pos)
 setBoard pos (z:zs) tab = setBoard pos zs (updateMatrix tab "O" (y z, x z))
 
+ -- Funkcja ustawia pozycje na planszy
 printPositions::[Position]->Int-> IO () 
 printPositions [] _ = putStr ""                  
 printPositions (p:pos) n  = do  putStr "["
@@ -108,9 +118,11 @@ printPositions (p:pos) n  = do  putStr "["
                                 putStrLn ")"
                                 printPositions pos (n+1)
 
+ -- Funkcja uaktualniająca dwuwyamirową macierz o element na pozycji (y,x)                             
 updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
 updateMatrix m x (r,c) =  take r m ++  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++ drop (r + 1) m                 
-                                                                                                                
+    
+ -- Wczytwanie stanu gry z pliku  
 readFromFile = do
     printPutFilename
     fileName <- getLine
@@ -121,6 +133,7 @@ readSheepsPositions::[Int]->[Position]
 readSheepsPositions [] = []
 readSheepsPositions (x:y:positions) = (Pos x y) : (readSheepsPositions positions)
     
+
 readPositions False _ = do
                         printWrongFilename
                         mainMenu  
@@ -133,14 +146,14 @@ readPositions True fileName = do
                               let sPos = readSheepsPositions positions
                               let state = State wPos sPos
                               gameMenu state
-
+-- Zapis stanu do pliku
 saveToFile state = do
     printPutFilename
     fileName <- getLine
     handle <- openFile fileName WriteMode
     savePositions ((wPosition state) : (sPosition state)) handle
     hClose handle
-
+-- Zapis do pliku jest realizowany przez zapis współrzędnych wilka, a później linia po linii owiec
 savePositions []  handle = do
                             return()
 savePositions (z:zs)  handle = do
@@ -148,7 +161,7 @@ savePositions (z:zs)  handle = do
                 hPutStr handle (" ")
                 hPutStrLn handle (show (y z))
                 savePositions zs  handle
-                              
+-- Komunikaty                              
 printLogo = do 
     putStrLn "         _                                                      _,._    "
     putStrLn "        / \\      _-'                                       __.'   _)   "
