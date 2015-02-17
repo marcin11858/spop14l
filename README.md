@@ -1,4 +1,6 @@
 spop14l
 =======
 
-Wilk i owce
+Projekt z przedmiotu SPOP w języku Haskell
+
+Gra: Wilk i owce
